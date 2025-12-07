@@ -8,7 +8,21 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
-load_dotenv(dotenv_path=BASE_DIR / '.env.local')  # 後で .env.prod に分けてもOK
+# ==========================
+# 環境ごとの .env 切り替え
+# ==========================
+# DJANGO_ENV が "prod" なら .env.prod、
+# それ以外（未設定や local）のときは .env.local を読む
+ENV_NAME = os.getenv("DJANGO_ENV", "local")
+env_file = BASE_DIR / f".env.{ENV_NAME}"
+
+if env_file.exists():
+    load_dotenv(dotenv_path=env_file)
+else:
+    # 念のためのフォールバック（開発で .env.local しかないケースなど）
+    fallback = BASE_DIR / ".env.local"
+    if fallback.exists():
+        load_dotenv(dotenv_path=fallback)
 
 # ====== 本番基本設定 ======
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "!!CHANGE_ME!!")  # ← 環境変数へ
@@ -81,16 +95,26 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 
 # ====== DB（本番: RDS PostgreSQL）======
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.getenv("DB_NAME"),
-        "USER": os.getenv("DB_USER"),
-        "PASSWORD": os.getenv("DB_PASSWORD"),
-        "HOST": os.getenv("DB_HOST"),
-        "PORT": os.getenv("DB_PORT", "5432"),
+if ENV_NAME == "local":
+    # ローカル環境 → SQLite
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
     }
-}
+else:
+    # 本番など → RDS(PostgreSQL)
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.getenv("DB_NAME"),
+            "USER": os.getenv("DB_USER"),
+            "PASSWORD": os.getenv("DB_PASSWORD"),
+            "HOST": os.getenv("DB_HOST"),
+            "PORT": os.getenv("DB_PORT", "5432"),
+        }
+    }
 
 # ====== 認証 / REST ======
 REST_FRAMEWORK = {
