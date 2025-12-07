@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <title>メールアドレス認証のお願い</title>
+</head>
+
+<body>
+    <p>{{ user.username }} 様</p>
+
+    <p>この度は <strong>INKBASE</strong> にご登録いただき、誠にありがとうございます。</p>
+
+    <p>以下のボタンをクリックして、メールアドレスの認証を完了してください。</p>
+
+    <p style="text-align: center;">
+        <a href="{{ verify_url|safe }}"
+            style="padding: 10px 20px; background-color: #4f46e5; color: white; text-decoration: none; border-radius: 5px;">
+            メールアドレスを認証する
+        </a>
+    </p>
+
+    <p>※このリンクは一定時間後に無効になります。</p>
+
+    <hr />
+    <p>INKBASE運営チーム</p>
+</body>
+
+</html>

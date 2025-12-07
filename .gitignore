@@ -1,0 +1,32 @@
+cat > .gitignore << 'EOF'
+# Python / venv
+venv/
+__pycache__/
+*.pyc
+
+# 環境変数ファイル
+.env
+.env.*
+!.env.example
+
+# Django
+staticfiles/
+media/
+*.sqlite3
+
+# VSCode 等
+.vscode/
+.idea/
+
+# その他ログ
+*.log
+EOF
+
+cat >> .gitignore << 'EOF'
+
+# Django static (collectstatic output)
+static/
+
+# DB backup
+db.sqlite3*
+EOF

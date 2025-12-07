@@ -1,0 +1,87 @@
+from rest_framework import viewsets, status
+from rest_framework.response import Response
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated, AllowAny
+
+from ..models import TattooArtist, Customer, CustomerConsent
+from ..serializers import (
+    TattooArtistSerializer,
+    ArtistStatsSerializer
+)
+from rest_framework.views import APIView
+from django.db.models import Avg
+from datetime import datetime
+from django.shortcuts import get_object_or_404
+from statistics import median
+
+
+# ------------------------------
+# 1(4).ログイン中の彫師プロフィール取得・編集（/artists/me）
+# ------------------------------
+
+class TattooArtistViewSet(viewsets.ModelViewSet):
+    queryset = TattooArtist.objects.filter(is_public=True)
+    serializer_class = TattooArtistSerializer
+    permission_classes = [AllowAny]
+    lookup_field = 'uuid'
+
+    @action(detail=False, methods=['get', 'patch'], permission_classes=[IsAuthenticated])
+    def me(self, request):
+        """ログイン中の彫師のプロフィール表示・編集（自分のみ）"""
+        try:
+            artist = TattooArtist.objects.get(user=request.user)
+        except TattooArtist.DoesNotExist:
+            return Response({'detail': 'プロフィール未登録'}, status=status.HTTP_404_NOT_FOUND)
+
+        if request.method == 'GET':
+            serializer = self.get_serializer(artist)
+            return Response(serializer.data)
+
+        elif request.method == 'PATCH':
+            serializer = self.get_serializer(artist, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# ------------------------------
+# 2. HOMEコンプリート後のカード 統計取得
+# ------------------------------
+
+class ArtistStatsAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, uuid):
+        artist = get_object_or_404(TattooArtist, uuid=uuid)
+        user = artist.user
+
+        # この彫師に紐づく顧客
+        customers = Customer.objects.filter(user=user)
+
+        # 顧客数
+        customer_count = customers.count()
+
+        # 同意書数（CustomerConsentの件数）
+        consent_count = CustomerConsent.objects.filter(customer__user=user).count()
+
+        # 年齢のリストを取得
+        ages = []
+        for c in customers:
+            if c.birth_date:
+                try:
+                    birth = datetime.strptime(c.birth_date, "%Y-%m-%d")
+                    age = (datetime.now() - birth).days // 365
+                    ages.append(age)
+                except ValueError:
+                    continue
+
+        # 中央年齢（中央値）を算出
+        median_age = int(median(ages)) if ages else None
+
+        return Response({
+            "customer_count": customer_count,
+            "consent_count": consent_count,
+            "median_age": median_age,
+            "username": artist.user.username,
+        })

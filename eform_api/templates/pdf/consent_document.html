@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    <style>
+        body {
+            font-family: "Helvetica Neue", "Helvetica", "Arial", sans-serif;
+            font-size: 14px;
+            line-height: 1.8;
+            margin: 40px;
+            color: #111;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 20px;
+            margin-bottom: 30px;
+        }
+
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 40px;
+        }
+
+        .info-table td {
+            padding: 8px 4px;
+            vertical-align: top;
+        }
+
+        .info-label {
+            width: 140px;
+            font-weight: bold;
+        }
+
+        .section {
+            margin-top: 32px;
+        }
+
+        .signature-block {
+            margin-top: 60px;
+            text-align: left;
+        }
+
+        .signature-image {
+            margin-top: 12px;
+            width: 300px;
+            height: auto;
+            border: 1px solid #aaa;
+        }
+
+        .footer {
+            margin-top: 80px;
+            text-align: right;
+            font-size: 12px;
+            color: #666;
+        }
+
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+            margin-left: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>{{ title }}</h1>
+
+    <div class="section">
+        {{ html_body|safe }}
+    </div>
+    <table class="info-table">
+        <tr>
+            <td class="info-label">氏名:</td>
+            <td>{{ customer.full_name }}</td>
+        </tr>
+        <tr>
+            <td class="info-label">生年月日:</td>
+            <td>{{ customer.birth_date }}</td>
+        </tr>
+        <tr>
+            <td class="info-label">同意日時:</td>
+            <td>{{ consent.signed_at|date:"Y年m月d日 H:i" }}</td>
+        </tr>
+        <tr>
+            <td class="info-label">バージョン:</td>
+            <td>{{ consent.consent_version }}</td>
+        </tr>
+    </table>
+
+    {% if signature %}
+    <div class="signature-block">
+        <p><strong>署名:</strong></p>
+        <img src="{{ signature }}" alt="署名画像" class="signature-image" />
+    </div>
+    {% endif %}
+
+    <div class="footer">
+        発行日: {{ consent.signed_at|date:"Y年m月d日" }}
+    </div>
+</body>
+
+</html>

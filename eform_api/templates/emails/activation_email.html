@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<body>
+    <p>{{ user.username }} 様</p>
+    <p>このたびは <strong>INKBASE</strong> にご登録いただきありがとうございます。</p>
+    <p>
+        以下のリンクをクリックして、本登録を完了してください：<br />
+        <a href="{% autoescape off %}{{ activation_url }}{% endautoescape %}">{{ activation_url }}</a>
+    </p>
+    <p>※このリンクは24時間で無効になります。</p>
+    <p>※このメールに心当たりがない場合は破棄してください。</p>
+</body>
+
+</html>
